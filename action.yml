@@ -16,7 +16,7 @@ inputs:
     default: 'en.'
 runs:
   using: 'docker'
-  image: 'Dockerfile'
+  image: 'docker://ghcr.io/circlesland/check-i18n-keys-dev:0.1.3'
   args:
     - ${{ inputs.master_json }}
     - ${{ inputs.file_types }}
