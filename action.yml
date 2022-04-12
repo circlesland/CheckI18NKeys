@@ -1,5 +1,8 @@
 name: 'Check svelte-i18n-keys'
 description: 'Compares i18n-key occurrences in code against a master json'
+branding: 
+  icon: search
+  color: white
 inputs:
   master_json:
     description: 'The path to the master json file'
@@ -13,7 +16,7 @@ inputs:
     default: 'en.'
 runs:
   using: 'docker'
-  image: 'Dockerfile'
+  image: 'docker://ghcr.io/circlesland/check-i18n-keys-dev:0.1.4'
   args:
     - ${{ inputs.master_json }}
     - ${{ inputs.file_types }}
