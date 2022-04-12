@@ -34,7 +34,31 @@ It can find occurrences of the following key usages:
   let b = i18n("shared.apiConnection.errors.norMoreThanOneDefinitions");
   throw new Error(window.i18n("shared.apiConnection.errors.connectionError", { values: { error: result.errors.map((o) => o.message).join("\n")}}));
   ```
-## Usage
+  
+## Use as github action
+### Example
+```yaml
+name: check svelte-18n keys
+on:
+  push:
+    branches: [ dev ]
+  pull_request:
+    branches: [ dev ]
+jobs:
+  check-svelte-i18n-keys:
+    runs-on: ubuntu-latest
+    steps:
+    - name: checkout
+      uses: actions/checkout@v1
+    - name: Check svelte-i18n-keys
+      uses: circlesland/CheckI18NKeys@v0.1.4-dev
+      with:
+        master_json: './i18n/lang/en.json'
+        file_types: 'ts,svelte'
+        default_language_prefix: 'en.'
+```
+
+## Use as cmd utility
 ```
 Usage:
   CheckI18NKeys [options]
@@ -50,12 +74,12 @@ Options:
   -?, -h, --help                                              Show help and usage information
 ```
 
-## Examples
-### Master json
+### Examples
+#### Master json
 The master.json file can be structured in two ways. It can either be nested or flat.  
 ⚠️ Only one language is supported in the master json.
 
-#### Nested
+##### Nested
 ```json
 {
   "en": {
@@ -79,7 +103,7 @@ The master.json file can be structured in two ways. It can either be nested or f
   }
 }
 ```
-#### Flat
+##### Flat
 ```json
 
 {
@@ -90,8 +114,8 @@ The master.json file can be structured in two ways. It can either be nested or f
   ...
 }
 ```
-### Invocations
-#### Find undefined keys and output suggested fixes
+#### Invocations
+##### Find undefined keys and output suggested fixes
 ```shell
 ./CheckI18NKeys \
   --source-dir /home/user/src/my-project/src \
@@ -100,7 +124,7 @@ The master.json file can be structured in two ways. It can either be nested or f
   -types ts,svelte
 ```
 
-#### Output JSON
+##### Output JSON
 ```shell
 ./CheckI18NKeys \
   --source-dir /home/user/src/my-project/src \
@@ -110,7 +134,7 @@ The master.json file can be structured in two ways. It can either be nested or f
   -json
 ```
 
-#### Include/exclude file types
+##### Include/exclude file types
 You can pass a list of the following file types to the `-types` option.  
 Supported types are: `js`, `ts` and `svelte`.
 ```shell
@@ -121,7 +145,7 @@ Supported types are: `js`, `ts` and `svelte`.
   -types js,ts,svelte
 ```
 
-#### Apply suggested fixes
+##### Apply suggested fixes
 ⚠️ Passing the `--fix` switch will apply all suggested fixes in the file system.
 ```shell
 ./CheckI18NKeys \
