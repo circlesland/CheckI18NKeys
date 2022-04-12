@@ -1,38 +1,44 @@
+using System.Collections.Immutable;
+
 namespace CheckI18NKeys;
 
 public static class Display
 {
     public static void UndefinedKeys(Dictionary<string, I18NKeyUsage[]> undefinedKeysByFile, string sourceDir)
     {
-        Console.WriteLine($"Found {undefinedKeysByFile.Count} undefined i18n keys in {sourceDir}");
-        Console.WriteLine("=================================================================");
+        Console.WriteLine($"== {sourceDir} ==");
+        Console.WriteLine($"Found {undefinedKeysByFile.SelectMany(o => o.Value).Count()} undefined i18n keys in {undefinedKeysByFile.Count} files:");
         
-        Print(undefinedKeysByFile, sourceDir);
+        Formatted(undefinedKeysByFile, sourceDir);
     }
 
     public static void Suggestions(Dictionary<string, SuggestedI18NKeyUsage[]> suggestedFixesByFile, string sourceDir)
     {
-        Console.WriteLine($"Found suggestions for {suggestedFixesByFile.Count} files:");
-        Console.WriteLine("=================================================================");
+        Console.WriteLine($"== {sourceDir} ==");
+        Console.WriteLine($"Found {suggestedFixesByFile.SelectMany(o => o.Value).Count()} suggestions in {suggestedFixesByFile.Count} files:");
         
-        Print(suggestedFixesByFile, sourceDir);
+        Formatted(suggestedFixesByFile, sourceDir);
     }
 
-    private static void Print<TRecord>(Dictionary<string, TRecord[]> suggestedFixesByFile, string sourceDir)
+    private static void Formatted<TRecord>(Dictionary<string, TRecord[]> usagesByFile, string sourceDir)
         where TRecord : I18NKeyUsage
     {
-        foreach (var file in suggestedFixesByFile)
+        foreach (var file in usagesByFile)
         {
             Console.WriteLine($"* {file.Key.Replace(sourceDir, "")}:");
-            var occurrencesByLine = file.Value.GroupBy(o => o.Line);
+            
+            var occurrencesByLine = file.Value
+                .GroupBy(o => o.Line)
+                .ToImmutableSortedDictionary(o => o.Key, o => o.ToArray());
+            
             foreach (var line in occurrencesByLine)
             {
-                if (line.Count() > 1)
+                if (line.Value.Length > 1)
                 {
                     var key = $"   - [{line.Key}:";
                     Console.WriteLine(key);
 
-                    foreach (var occurence in line)
+                    foreach (var occurence in line.Value)
                     {
                         var k = $"{" ".PadRight(key.Length)}{occurence.Column}]";
                         Console.WriteLine($"{k.PadRight(16, ' ')}{occurence.Key}");
@@ -44,7 +50,7 @@ public static class Display
                 }
                 else
                 {
-                    var occurence = line.First();
+                    var occurence = line.Value[0];
                     var address = $"[{occurence.Line}:{occurence.Column}]".PadRight(10, ' ');
                     Console.WriteLine($"   - {address} {occurence.Key}");
                     if (occurence is SuggestedI18NKeyUsage suggestedI18NKeyUsage)
