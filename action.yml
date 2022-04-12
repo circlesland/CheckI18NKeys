@@ -1,5 +1,8 @@
 name: 'Check svelte-i18n-keys'
 description: 'Compares i18n-key occurrences in code against a master json'
+branding: 
+  icon: search
+  color: white
 inputs:
   master_json:
     description: 'The path to the master json file'
