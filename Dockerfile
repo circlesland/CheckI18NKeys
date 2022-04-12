@@ -17,5 +17,5 @@ LABEL org.opencontainers.image.source=https://github.com/circlesland/CheckI18NKe
 ENV DOTNET_EnableDiagnostics=0
 WORKDIR /app
 COPY --from=publish /app/publish .
-RUN chmod +x ./entrypoint.sh
-ENTRYPOINT ["./entrypoint.sh" ]
+RUN chmod +x /app/entrypoint.sh
+ENTRYPOINT ["/app/entrypoint.sh" ]
