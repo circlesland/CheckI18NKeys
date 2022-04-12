@@ -1,0 +1,20 @@
+name: 'Check svelte-i18n-keys'
+description: 'Compares i18n-key occurrences in code against a master json'
+inputs:
+  master_json:
+    description: 'The path to the master json file'
+    required: true
+  file_types:
+    description: 'A comma separated list of file types. Choose from: js, ts or svelte.'
+    required: true
+  default_language_prefix:
+    description: 'The language of the master json file followed by a dot. Example: "en." or "de."'
+    required: true
+    default: 'en.'
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - ${{ inputs.master_json }}
+    - ${{ inputs.file_types }}
+    - ${{ inputs.default_language_prefix }}

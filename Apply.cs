@@ -16,12 +16,12 @@ public static class Apply
                 var keyStart = suggestion.Column;
                 var keyEnd = suggestion.Column + suggestion.Key.Length;
                 
-                var currentLine = lines[suggestion.Line - 1];
+                var currentLine = lines[suggestion.Line];
                 
                 var head = currentLine[..keyStart];
                 var tail = currentLine[keyEnd..];
 
-                lines[suggestion.Line - 1] =  head + suggestion.SuggestedKey + tail;
+                lines[suggestion.Line] =  head + suggestion.SuggestedKey + tail;
             }
 
             File.WriteAllLines(suggestionsForFile.Key, lines);
