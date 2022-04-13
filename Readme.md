@@ -1,6 +1,5 @@
 # Check svelte-i18n keys
-
-Find misspelled or undefined i18n-keys in a svelte-project.  
+Find misspelled or undefined [svelte-i18n](https://github.com/kaisermann/svelte-i18n) keys in a project directory.  
 
 ## Description
 The program searches for occurrences of svelte-i18n keys in a source directory. 

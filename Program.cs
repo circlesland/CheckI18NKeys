@@ -80,6 +80,20 @@ public static class Program
             Apply.Suggestions(suggestedFixesByFile);
         }
 
+        PrintResult(sourceDir, fix, json, undefinedKeys, suggestedFixesByFile);
+
+        return undefinedKeys.Count > 0
+            ? 99
+            : 0;
+    }
+
+    private static void PrintResult(
+        string sourceDir, 
+        bool? fix, 
+        bool? json,
+        Dictionary<string, KeyUsage[]> undefinedKeys,
+        Dictionary<string, SuggestedKeyUsage[]> suggestedFixesByFile)
+    {
         var undefinedKeysByFile = undefinedKeys
             .SelectMany(o => o.Value)
             .GroupBy(o => o.File)
@@ -108,10 +122,6 @@ public static class Program
 
             Console.WriteLine(jsonResult);
         }
-
-        return undefinedKeysByFile.Count > 0
-            ? 99
-            : 0;
     }
 
     private static HashSet<string> ValidateInputs(string sourceDir, string masterJsonFile,
