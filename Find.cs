@@ -8,31 +8,29 @@ namespace CheckI18NKeys;
 public static class Find
 {
     private const int MaxSuggestionMatchDistance = 3;
-    
+
     private const string JavascriptSyntaxRegex = "i18n\\(\"([\\w|\\.|\\-|_]*?)\",?(.*)?\\)";
     private const string SvelteSyntaxRegex = "\\$_\\(\"([\\w|\\.|\\-|_]*?)\",?(.*)?\\)";
-    
-    public static readonly I18NKeyExtractor[] KeyExtractors =
+    private const string LabelSyntaxRegex = "<Label.*?key=\"(.*?)\">.*? </Label>";
+    private const string CollapsedLabelSyntaxRegex = "<Label.*?key=\"(.*?)\"\\s*?/>";
+
+    public static readonly KeyExtractor[] KeyExtractors =
     {
-        new("js", "*.js", new I18NKeyExtractorRegex[]
+        new("js", "*.js", new[] {JavascriptSyntaxRegex}),
+        new("ts", "*.ts", new[] {JavascriptSyntaxRegex}),
+        new("svelte", "*.svelte", new[]
         {
-            new (JavascriptSyntaxRegex, 6)
-        }),
-        new("ts", "*.ts", new I18NKeyExtractorRegex[]
-        {
-            new (JavascriptSyntaxRegex, 6)
-        }),
-        new("svelte", "*.svelte", new I18NKeyExtractorRegex[]
-        {
-            new (JavascriptSyntaxRegex, 6),
-            new (SvelteSyntaxRegex, 4)
+            JavascriptSyntaxRegex, 
+            SvelteSyntaxRegex, 
+            LabelSyntaxRegex, 
+            CollapsedLabelSyntaxRegex
         })
     };
 
-    private static IEnumerable<FileInfo> RelevantSourceFiles(string sourceDirectory, HashSet<string> fileTypes)
+    private static IEnumerable<FileInfo> RelevantSourceFiles(string sourceDirectory, ISet<string> fileTypes)
     {
         var sourceDirectoryInfo = new DirectoryInfo(sourceDirectory);
-        
+
         var relevantFiles = KeyExtractors
             .Where(o => fileTypes.Contains(o.Name))
             .SelectMany(extractor => sourceDirectoryInfo.EnumerateFiles(
@@ -42,7 +40,7 @@ public static class Find
         return relevantFiles.ToImmutableArray();
     }
 
-    public static ImmutableHashSet<string> ExpectedKeysInMasterJson(string masterJsonFile,
+    public static ISet<string> ExpectedKeysInMasterJson(string masterJsonFile,
         string? defaultLanguagePrefix)
     {
         var jsonFile = new FileInfo(masterJsonFile);
@@ -77,16 +75,16 @@ public static class Find
         return expectedI18NKeys.ToImmutableHashSet();
     }
 
-    public static IEnumerable<I18NKeyUsage> I18NKeyUsagesInCode(string sourceDirectory, HashSet<string> fileTypes)
+    public static IEnumerable<KeyUsage> I18NKeyUsagesInCode(string sourceDirectory, ISet<string> fileTypes)
     {
         var relevantFiles = RelevantSourceFiles(sourceDirectory, fileTypes);
-        var foundUsages = new List<I18NKeyUsage>();
-        
-        var fileTypeRegexes = KeyExtractors.ToDictionary(o => o.Name, o => o.Regexes.Select(p => new
-        {
-            p.Offset,
-            Regex = new Regex(p.Regex, RegexOptions.Compiled)
-        }).ToArray());
+        var foundUsages = new List<KeyUsage>();
+
+        var fileTypeRegexes = KeyExtractors.ToDictionary(
+            o => o.Name,
+            o => o.Regexes
+                .Select(p => new Regex(p, RegexOptions.Compiled))
+                .ToArray());
 
         foreach (var file in relevantFiles)
         {
@@ -94,20 +92,26 @@ public static class Find
             {
                 continue;
             }
-            
+
             var lines = File.ReadAllLines(file.FullName);
             for (var lineNo = 0; lineNo < lines.Length; lineNo++)
             {
                 var line = lines[lineNo];
                 foreach (var extractorRegex in applicableRegexes)
                 {
-                    var extractedKeyMatches = extractorRegex.Regex.Matches(line);
+                    if (file.Extension == ".svelte" &&  line.Contains("<Label"))
+                    {
+                        
+                    }
+                    
+                    var extractedKeyMatches = extractorRegex.Matches(line);
                     foreach (Match extractedKeyMatch in extractedKeyMatches)
                     {
-                        foundUsages.Add(new I18NKeyUsage(
+                        var index = line.IndexOf(extractedKeyMatch.Groups[1].Value, StringComparison.Ordinal);
+                        foundUsages.Add(new KeyUsage(
                             file.FullName,
                             lineNo,
-                            extractedKeyMatch.Index + extractorRegex.Offset,
+                            index,
                             extractedKeyMatch.Groups[1].Value));
                     }
                 }
@@ -117,10 +121,10 @@ public static class Find
         return foundUsages.ToImmutableArray();
     }
 
-    public static IEnumerable<SuggestedI18NKeyUsage> SuggestedFixes(Dictionary<string, I18NKeyUsage[]> undefinedKeys,
+    public static IEnumerable<SuggestedKeyUsage> SuggestedFixes(IDictionary<string, KeyUsage[]> undefinedKeys,
         string[] unusedKeys)
     {
-        var possibleMatches = new List<SuggestedI18NKeyUsage>();
+        var possibleMatches = new List<SuggestedKeyUsage>();
         foreach (var undefinedKey in undefinedKeys)
         {
             foreach (var unusedKey in unusedKeys)
@@ -133,13 +137,12 @@ public static class Find
 
                 foreach (var undefinedKeyUsage in undefinedKey.Value)
                 {
-                    possibleMatches.Add(new SuggestedI18NKeyUsage(
+                    possibleMatches.Add(new SuggestedKeyUsage(
                         undefinedKeyUsage.File,
                         undefinedKeyUsage.Line,
                         undefinedKeyUsage.Column,
                         undefinedKeyUsage.Key,
-                        unusedKey,
-                        distance));
+                        unusedKey));
                 }
             }
         }

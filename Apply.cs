@@ -2,7 +2,7 @@ namespace CheckI18NKeys;
 
 public static class Apply
 {
-    public static void Suggestions(Dictionary<string, SuggestedI18NKeyUsage[]> suggestedFixesByFile)
+    public static void Suggestions(Dictionary<string, SuggestedKeyUsage[]> suggestedFixesByFile)
     {
         foreach (var suggestionsForFile in suggestedFixesByFile)
         {

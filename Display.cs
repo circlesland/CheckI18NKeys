@@ -4,7 +4,7 @@ namespace CheckI18NKeys;
 
 public static class Display
 {
-    public static void UndefinedKeys(Dictionary<string, I18NKeyUsage[]> undefinedKeysByFile, string sourceDir)
+    public static void UndefinedKeys(Dictionary<string, KeyUsage[]> undefinedKeysByFile, string sourceDir)
     {
         Console.WriteLine($"== {sourceDir} ==");
         Console.WriteLine($"Found {undefinedKeysByFile.SelectMany(o => o.Value).Count()} undefined i18n keys in {undefinedKeysByFile.Count} files:");
@@ -12,7 +12,7 @@ public static class Display
         Formatted(undefinedKeysByFile, sourceDir);
     }
 
-    public static void Suggestions(Dictionary<string, SuggestedI18NKeyUsage[]> suggestedFixesByFile, string sourceDir)
+    public static void Suggestions(Dictionary<string, SuggestedKeyUsage[]> suggestedFixesByFile, string sourceDir)
     {
         Console.WriteLine($"== {sourceDir} ==");
         Console.WriteLine($"Found {suggestedFixesByFile.SelectMany(o => o.Value).Count()} suggestions in {suggestedFixesByFile.Count} files:");
@@ -21,7 +21,7 @@ public static class Display
     }
 
     private static void Formatted<TRecord>(Dictionary<string, TRecord[]> usagesByFile, string sourceDir)
-        where TRecord : I18NKeyUsage
+        where TRecord : KeyUsage
     {
         foreach (var file in usagesByFile)
         {
@@ -42,7 +42,7 @@ public static class Display
                     {
                         var k = $"{" ".PadRight(key.Length)}{occurence.Column}]";
                         Console.WriteLine($"{k.PadRight(16, ' ')}{occurence.Key}");
-                        if (occurence is SuggestedI18NKeyUsage suggestedI18NKeyUsage)
+                        if (occurence is SuggestedKeyUsage suggestedI18NKeyUsage)
                         {
                             Console.WriteLine($"{k.PadRight(16, ' ')}{suggestedI18NKeyUsage.SuggestedKey}");
                         }
@@ -53,7 +53,7 @@ public static class Display
                     var occurence = line.Value[0];
                     var address = $"[{occurence.Line}:{occurence.Column}]".PadRight(10, ' ');
                     Console.WriteLine($"   - {address} {occurence.Key}");
-                    if (occurence is SuggestedI18NKeyUsage suggestedI18NKeyUsage)
+                    if (occurence is SuggestedKeyUsage suggestedI18NKeyUsage)
                     {
                         Console.WriteLine($"     {" ".PadRight(address.Length)} {suggestedI18NKeyUsage.SuggestedKey}");
                     }
