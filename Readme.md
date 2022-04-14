@@ -19,6 +19,7 @@ It can find occurrences of the following key usages:
   </script>
   <div class="mt-4 text-3xl font-heading text-dark">
     {$_("dapps.o-dashboard.pages.home.passport")}
+    <Label key="dapps.o-dashboard.pages.home.passport" />
   </div> 
   ```
 * .ts-Files:

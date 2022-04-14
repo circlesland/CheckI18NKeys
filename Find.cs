@@ -11,7 +11,7 @@ public static class Find
 
     private const string JavascriptSyntaxRegex = "i18n\\(\"([\\w|\\.|\\-|_]*?)\",?(.*)?\\)";
     private const string SvelteSyntaxRegex = "\\$_\\(\"([\\w|\\.|\\-|_]*?)\",?(.*)?\\)";
-    private const string LabelSyntaxRegex = "<Label.*?key=\"(.*?)\">.*? </Label>";
+    private const string LabelSyntaxRegex = "<Label.*?key=\"(.*?)\">.*?</Label>";
     private const string CollapsedLabelSyntaxRegex = "<Label.*?key=\"(.*?)\"\\s*?/>";
 
     public static readonly KeyExtractor[] KeyExtractors =
@@ -57,11 +57,14 @@ public static class Find
 
             if (currentToken is JValue value)
             {
-                expectedI18NKeys.Add(
-                    defaultLanguagePrefix != null
-                        ? value.Path.Replace(defaultLanguagePrefix, "")
-                        : value.Path
-                );
+                var path = value.Path;
+                if (defaultLanguagePrefix != null
+                    && path.IndexOf(defaultLanguagePrefix, StringComparison.Ordinal) == 0)
+                {
+                    path = path.Substring(defaultLanguagePrefix.Length);
+                }
+                
+                expectedI18NKeys.Add(path);
             }
             else
             {
